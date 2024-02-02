@@ -24,8 +24,8 @@ class UserController extends Controller
 
         } catch (\Exception $e) {
             //this response indicates that register validation passed but registration failed for different reason
-            Log::channel('api')->info("registration failed, " . $e->getMessage());
-            return response()->json(['errors' => "Account registration failed." ,'message'=>$e->getMessage()], 401);
+            Log::channel('api')->info("unauthorized, registration failed, " . $e->getMessage());
+            return response()->json(['errors' => "unauthorized" ,'message'=>$e->getMessage()], 401);
         }
 
         return response()->json(['success' => "Account successfully registered." ,'user'=>$user], 200);
@@ -43,21 +43,21 @@ class UserController extends Controller
 
         if (!Auth::validate($credentials)) {
             //this indicates that login validation passed but credentials are not matched
-            Log::channel('api')->info("Account login failed.".trans('auth.failed'));
-            return response()->json(['errors' => "Account login failed." ,'message'=>trans('auth.failed')], 200);
+            Log::channel('api')->info("unauthorized, Account login failed.".trans('auth.failed'));
+            return response()->json(['errors' => "unauthorized" ,'message'=>trans('auth.failed')], 401);
         }
 
         try {
 
             $user = Auth::getProvider()->retrieveByCredentials($credentials);
-            
+
             Session::flush();
             Auth::login($user);
             $success['token'] =  $user->createToken('MyApp')->accessToken;
 
         } catch (\Exception $e) {
             //this response indicates that login validation passed & credentials matched but login failed for different reason
-            Log::channel('api')->info("login failed, " . $e->getMessage());
+            Log::channel('api')->info("unauthorized, Account login failed, " . $e->getMessage());
             return response()->json(['error' => "unauthorized" ,'message'=>"authentication failed"], 401);
 
         }
