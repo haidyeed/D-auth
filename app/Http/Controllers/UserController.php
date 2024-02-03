@@ -100,7 +100,7 @@ class UserController extends Controller
     {
         //does request has token ? 
         if(!$request->hasHeader('authorization')){
-            return response()->json(['response' =>['errors' => "unauthorized" ,'message'=>'no token found for authorization'], 401]);
+            return response()->json(['response' =>['errors' => "unauthorized" ,'message'=>'no token found for authorization','user_id'=> 0], 401]);
         }
 
         $access_token = $request->header('Authorization');
@@ -116,10 +116,10 @@ class UserController extends Controller
 
         if($user_data->user_id != Auth::guard('api')->id()){
             //in case user is found but not authenticated
-            return response()->json(['response' =>['errors' => "access forbidden" ,'message'=>'token found but not authorized'], 403]);
+            return response()->json(['response' =>['errors' => "access forbidden" ,'message'=>'token found but not authorized','user_id'=> 0], 403]);
         }
   
-        return response()->json(['response' =>['success' => "authorized" ,'message'=>'token verified', 'user_id'=>$user_data->user_id], 200]);
+        return response()->json(['response' =>['success' => "authorized" ,'message'=>'token verified', 'user_id'=>$user_data->user_id, 'errors'=>'none'], 200]);
     }
 
 }
