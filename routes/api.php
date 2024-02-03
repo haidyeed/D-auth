@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 |
 */
 
+Route::get('/user', [UserController::class, 'getUserData'])->name('user');
 
 Route::post("register",[UserController::class,'register']);
 

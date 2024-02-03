@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Http\Requests\{RegisterRequest, LoginRequest};
 use Illuminate\Support\Facades\{Auth, Session};
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -86,6 +88,38 @@ class UserController extends Controller
         }
 
         return response()->json(['success' => "Account successfully logged out."], 200);
+    }
+
+
+    /**
+     * get user data.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getUserData(Request $request)
+    {
+        //does request has token ? 
+        if(!$request->hasHeader('authorization')){
+            return response()->json(['response' =>['errors' => "unauthorized" ,'message'=>'no token found for authorization','user_id'=> 0], 401]);
+        }
+
+        $access_token = $request->header('Authorization');
+        $auth_header = explode(' ', $access_token);
+        $token = $auth_header[1];
+        $token_parts = explode('.', $token);
+        $token_header = $token_parts[1];
+        $token_header_json = base64_decode($token_header);
+        $token_header_array = json_decode($token_header_json, true);
+        $token_id = $token_header_array['jti'];
+  
+        $user_data = DB::table('oauth_access_tokens')->where('id', $token_id)->first();
+
+        if($user_data->user_id != Auth::guard('api')->id()){
+            //in case user is found but not authenticated
+            return response()->json(['response' =>['errors' => "access forbidden" ,'message'=>'token found but not authorized','user_id'=> 0], 403]);
+        }
+  
+        return response()->json(['response' =>['success' => "authorized" ,'message'=>'token verified', 'user_id'=>$user_data->user_id, 'errors'=>'none'], 200]);
     }
 
 }
